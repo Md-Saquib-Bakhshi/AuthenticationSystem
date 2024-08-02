@@ -1,15 +1,19 @@
 ﻿using AuthenticationSystem.Models;
 using AuthenticationSystem.Repository;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Threading.Tasks;
 
 namespace AuthenticationSystem.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class RegistrationsController : ControllerBase
     {
-        IRegistrationService _registrationService;
+        private readonly IRegistrationService _registrationService;
 
         public RegistrationsController(IRegistrationService registrationService)
         {
@@ -17,14 +21,15 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpPost("adduser")]
-        public async Task<IActionResult> AddUser(Registration user)
+        [AllowAnonymous]
+        public async Task<IActionResult> AddUser([FromBody] Registration user)
         {
             if (user != null)
             {
                 await _registrationService.AddUser(user);
                 return Ok("!!!User added successfully!!!");
             }
-            return NotFound("!!!User added fails!!!");
+            return BadRequest("!!!User added fails!!!");
         }
 
         [HttpGet]
@@ -46,10 +51,10 @@ namespace AuthenticationSystem.Controllers
         }
 
         [HttpPut("update/{id}")]
-        public async Task<IActionResult> UpdateUser([FromRoute] Guid id,[FromBody] Registration user)
+        public async Task<IActionResult> UpdateUser([FromRoute] Guid id, [FromBody] Registration user)
         {
             var existedUser = await _registrationService.UpdateUser(id, user);
-            if(existedUser)
+            if (existedUser)
             {
                 return Ok($"!!!User with id {id} updated successfully!!!");
             }
@@ -60,7 +65,7 @@ namespace AuthenticationSystem.Controllers
         public async Task<IActionResult> DeleteUser([FromRoute] Guid id)
         {
             var existedUser = await _registrationService.DeleteUser(id);
-            if(existedUser)
+            if (existedUser)
             {
                 return Ok($"!!!User with id {id} deleted successfully!!!");
             }

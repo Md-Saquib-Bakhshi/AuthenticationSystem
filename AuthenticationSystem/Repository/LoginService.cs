@@ -1,11 +1,12 @@
 ﻿using AuthenticationSystem.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace AuthenticationSystem.Repository
 {
     public class LoginService : ILoginService
     {
-        RegistrationDbContext _registrationDbContext;
+        private readonly RegistrationDbContext _registrationDbContext;
 
         public LoginService(RegistrationDbContext registrationDbContext)
         {
@@ -14,14 +15,14 @@ namespace AuthenticationSystem.Repository
 
         public async Task<bool> IsExistingUser(string email, string password)
         {
-            var checkingUser = await _registrationDbContext.RegistrationSet.FirstOrDefaultAsync( x => x.Email == email);
-            if (checkingUser != null)
+            var user = await _registrationDbContext.RegistrationSet
+                .FirstOrDefaultAsync(x => x.Email == email);
+
+            if (user != null)
             {
-                if(checkingUser.Password == password)
-                {
-                    return true;
-                }
+                return user.Password == password; 
             }
+
             return false;
         }
     }
